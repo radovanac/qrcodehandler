@@ -1,0 +1,14 @@
+version: "3.3"
+services:
+  db:
+    image: postgres:12.2
+    restart: always
+    ports:
+      - 127.0.0.1:7001:5432
+    #userns_mode: "host"
+    environment:
+      POSTGRES_PASSWORD: root
+      POSTGRES_USER: root
+      POSTGRES_DB: qrcode
+    volumes:
+      - ~/tmp/postgresql:/var/lib/postgresql/data
