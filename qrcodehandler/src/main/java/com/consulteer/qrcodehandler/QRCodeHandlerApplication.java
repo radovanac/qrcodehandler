@@ -15,9 +15,8 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
@@ -34,15 +33,17 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class QRCodeHandlerApplication {
 
-  private static final String FOLDER_PATH = "/Users/webops/Desktop/QRCodes/5kbatch/";
+  //change this depending on where do you want qr codes to be saved
+  private static final String FOLDER_PATH = "/Users/webops/Desktop/QRCodes/";
   private static final String EXTENSION = ".png";
-  private static final String LOGO = "/Users/webops/Desktop/TOB3.png";
   private static final int WIDTH = 400;
   private static final int HEIGHT = 400;
 
-  private static BufferedImage getOverlay(String logo) throws IOException {
-    File file = new File(logo);
-    return ImageIO.read(file);
+  static InputStream is = QRCodeHandlerApplication.class.getClassLoader()
+      .getResourceAsStream("files/TOB3.png");
+
+  private static BufferedImage getOverlay(InputStream logo) throws IOException {
+    return ImageIO.read(logo);
   }
 
   private static String generateRandomTitle(Random random, int length) {
@@ -71,7 +72,7 @@ public class QRCodeHandlerApplication {
     var bitMatrix = writer.encode(str, BarcodeFormat.QR_CODE, WIDTH, HEIGHT, hashMap);
 
     BufferedImage qrImage = MatrixToImageWriter.toBufferedImage(bitMatrix);
-    BufferedImage overlayImg = getOverlay(LOGO);
+    BufferedImage overlayImg = getOverlay(is);
 
     int deltaHeight = qrImage.getHeight() - overlayImg.getHeight();
     int deltaWidth = qrImage.getWidth() - overlayImg.getWidth();
@@ -102,7 +103,9 @@ public class QRCodeHandlerApplication {
       g.drawImage(qrImage, 10, 0, null);
       g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));
       g.drawImage(overlayImg, deltaHeight + 2, deltaWidth - 12, null);
-      Font font = Font.createFont(Font.TRUETYPE_FONT, new FileInputStream("/Users/webops/Desktop/NotoSans-Regular.ttf"));
+      InputStream notoSans = QRCodeHandlerApplication.class.getClassLoader()
+          .getResourceAsStream("files/NotoSans-Regular.ttf");
+      Font font = Font.createFont(Font.TRUETYPE_FONT, notoSans);
       g.setFont(font);
       g.setFont(g.getFont().deriveFont(25.0f));
       Color textColor = Color.BLACK;
@@ -131,5 +134,4 @@ public class QRCodeHandlerApplication {
     System.out.println("Time elapsed: " + formatedTime);
     System.out.println("QR Generated successfully");
   }
-
 }
